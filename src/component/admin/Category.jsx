@@ -10,23 +10,24 @@ const Category = () => {
     const [editCategoryId, setEditCategoryId] = useState(null);
     const { register, handleSubmit, reset } = useForm();
 
-    // Fetch categories on component mount
     useEffect(() => {
         fetchCategories();
     }, []);
 
-    // Fetch categories from the server
     const fetchCategories = async () => {
         try {
             const response = await axios.get('http://localhost:4000/get-categories');
-            console.log('API Response:', response.data); 
+            // setCategories(response.data.data);
+            console.log('API Response:', categories); //Get Dtata
 
-            if (Array.isArray(response.data)) {
-                setCategories(response.data);
+
+            if (Array.isArray(response.data.data)) {
                 console.log('Updated Categories:', response.data);
+                setCategories(response.data.data);
+
             } else {
                 console.error('Expected an array but received:', response.data);
-                setCategories([]); 
+                // setCategories(response.data.data); 
             }
         } catch (error) {
             console.error('Error fetching categories:', error);
@@ -36,11 +37,11 @@ const Category = () => {
 
     // Handle form submission
     const onSubmit = async (data) => {
-        const formData = new FormData(); // Create FormData to handle file upload
+        const formData = new FormData(); 
         formData.append('name', data.name);
         formData.append('subCategory', data.subCategory);
         if (data.landingImage.length > 0) {
-            formData.append('landingImage', data.landingImage[0]); // Append file if it exists
+            formData.append('landingImage', data.landingImage[0]); 
         }
 
         try {
@@ -75,7 +76,6 @@ const Category = () => {
         reset({
             name: category.name,
             subCategory: category.subCategory,
-            // landingImage should not be set for edit as it's a file input
         });
         setIsEditing(true);
     };
@@ -142,7 +142,9 @@ const Category = () => {
           </div>
         </div>
         <div className="header-space" />
-        <div className="text">Add Product</div>
+        <div className="text">Add Category</div>
+
+
         <div className="container mx-auto p-4">
 
             <form onSubmit={handleSubmit(onSubmit)} className="mb-4">
@@ -181,12 +183,14 @@ const Category = () => {
                 </button>
             </form>
 
+
+            {/*==================== GET DATA =============================== */}
             <table className="min-w-full border border-gray-300">
                 <thead>
                     <tr>
+                        <th className="border border-gray-300 p-2">Landing Image</th>
                         <th className="border border-gray-300 p-2">Name</th>
                         <th className="border border-gray-300 p-2">Sub Category</th>
-                        <th className="border border-gray-300 p-2">Landing Image</th>
                         <th className="border border-gray-300 p-2">Actions</th>
                     </tr>
                 </thead>
@@ -194,12 +198,13 @@ const Category = () => {
                     {categories.length > 0 ? (
                         categories.map((category) => (
                             <tr key={category._id}>
+                                  <td className="border border-gray-300 p-2">
+                                {/* {category.landingImage} */}
+                                    {category.landingImage && <img src={category.landingImage} alt={category.name} className="w-26 h-16 object-cover" />}
+                                </td>
                                 <td className="border border-gray-300 p-2">{category.name}</td>
                                 <td className="border border-gray-300 p-2">{category.subCategory}</td>
-                                <td className="border border-gray-300 p-2">
-                                {category.landingImage}
-                                    {/* {category.landingImage && <img src={category.landingImage} alt={category.name} className="w-16 h-16 object-cover" />} */}
-                                </td>
+                              
                                 <td className="border border-gray-300 p-2">
                                     <button onClick={() => handleEdit(category)} className="bg-yellow-500 text-white p-1 rounded-md mr-2">
                                         Edit
