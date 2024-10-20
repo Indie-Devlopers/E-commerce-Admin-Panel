@@ -1,4 +1,3 @@
-import React from 'react'
 import { Link } from 'react-router-dom';
 
 
@@ -19,8 +18,10 @@ const Sidenav = () => {
       </li>
       <li>
         <a href="#">
+        <Link to='/'>
           <i className="bx bx-grid-alt" />
           <span className="links_name">Dashboard</span>
+          </Link>
         </a>
         <span className="tooltip">Dashboard</span>
       </li>
@@ -28,7 +29,7 @@ const Sidenav = () => {
         
         <a href="#">
         <Link to='/postdata'>
-        <i class="fa-brands fa-product-hunt"></i>
+        <i className="fa-brands fa-product-hunt"></i>
           <span className="links_name">Add Product</span>
           </Link>
         </a>
@@ -38,7 +39,7 @@ const Sidenav = () => {
         
         <a href="#">
         <Link to='/category'>
-        <i class="fa-brands fa-product-hunt"></i>
+        <i className="fa-brands fa-product-hunt"></i>
           <span className="links_name">Add Category</span>
           </Link>
         </a>

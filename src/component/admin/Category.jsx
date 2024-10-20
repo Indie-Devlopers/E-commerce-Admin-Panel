@@ -5,6 +5,7 @@ import Swal from 'sweetalert2'; // For SweetAlert
 import Sidenav from '../layouts/Sidenav';
 
 const Category = () => {
+    
     const [categories, setCategories] = useState([]); 
     const [isEditing, setIsEditing] = useState(false);
     const [editCategoryId, setEditCategoryId] = useState(null);
@@ -110,7 +111,7 @@ const Category = () => {
           <div className="header uboxed">
             <ul className="logo">
               <li>
-                <img src="https://byjaris.com/img/byjaris.svg" alt="Fimanbol" />
+                
               </li>
             </ul>
             <ul className="menu">
@@ -228,4 +229,4 @@ const Category = () => {
     );
 };
 
-export default Category;
+export default Category;  
