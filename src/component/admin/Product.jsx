@@ -9,14 +9,11 @@ import { setProductId } from './slice/productSlice'
 
 const ProductForm = () => {
     const dispatch = useDispatch();
-
-
     const { register, handleSubmit, control, reset } = useForm({
         defaultValues: {
             variants: [{ color: '', productImage: [] }]
         }
     });
-
     const { fields, append, remove } = useFieldArray({
         control,
         name: 'variants'
@@ -24,11 +21,14 @@ const ProductForm = () => {
 
     const [categories, setCategories] = useState([]);
     const [subCategories, setSubCategories] = useState([]);
+    const [products, setProducts] = useState([]); // State to hold products data
     const [selectedCategory, setSelectedCategory] = useState('');
     const [createdProductId, setCreatedProductId] = useState('');
 
+    // Fetch categories on component mount
     useEffect(() => {
         fetchCategories();
+        fetchProducts(); // Fetch products data on component mount
     }, []);
 
     // Fetch Categories from the API
@@ -41,13 +41,23 @@ const ProductForm = () => {
         }
     };
 
+    // Fetch Products from the API
+    const fetchProducts = async () => {
+        try {
+            const response = await axios.get('http://localhost:4000/products/get-products');
+            console.log(response.data.data)
+            setProducts(response.data.data); // Assuming response.data.data contains the list of products
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        }
+    };
+
     // Handle category change to load subcategories
     const handleCategoryChange = (categoryId) => {
         setSelectedCategory(categoryId);
         const selectedCategoryData = categories.find((cat) => cat._id === categoryId);
         setSubCategories(selectedCategoryData ? selectedCategoryData.subCategory : []);
     };
-
     const onSubmit = async (data) => {
         const formData = new FormData();
 
@@ -72,12 +82,12 @@ const ProductForm = () => {
         formData.append('reviews', data.reviews);
 
         // Handle variants (color and images)
-        data.variants.forEach((variant, index) => {
-            formData.append(`variants[${index}][color]`, variant.color);
-            for (let i = 0; i < variant.productImage.length; i++) {
-                formData.append(`variants[${index}][productImage]`, variant.productImage[i]);
-            }
-        });
+        // data.variants.forEach((variant, index) => {
+        //     formData.append(`variants[${index}][color]`, variant.color);
+        //     for (let i = 0; i < variant.productImage.length; i++) {
+        //         formData.append(`variants[${index}][productImage]`, variant.productImage[i]);
+        //     }
+        // });
 
         try {
            const response = await axios.post('http://localhost:4000/products/product', formData, {
@@ -347,7 +357,46 @@ const ProductForm = () => {
 
 
        {/* <VariantForm productID={createdProductId}/> */}
-        
+         {/* Product Table */}
+         <h2 className="text-2xl font-bold mt-8">Products List</h2>
+         <table border="1" style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        {/* <th>Description</th> */}
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th>SubCategory</th>
+                        {/* <th>Sizes</th>
+                        <th>Fabric</th>
+                        <th>Origin</th>
+                        <th>Tags</th>
+                        <th>Rating</th>
+                        <th>Status</th> */}
+                    </tr>
+                </thead>
+                <tbody>
+                    {products.map((product) => (
+                        <tr key={product._id}>
+                            <td>{product.productName}</td>
+                            {/* <td>{product.productDescription}</td> */}
+                            <td>{product.productPrice}</td>
+                            <td>{product.categoryId.name}</td>
+                            <td>{product.categoryId.subCategory}</td>
+                            {/* <td>{product.productDiscountPrice || "N/A"}</td>
+                            <td>
+                                Top: {product.productSizes?.topSize || "N/A"}, Bottom:{" "}
+                                {product.productSizes?.bottomSize || "N/A"}
+                            </td>
+                            <td>{product.productDetails?.fabric || "N/A"}</td>
+                            <td>{product.productDetails?.countryOrigin || "N/A"}</td>
+                            <td>{product.tags || "N/A"}</td>
+                            <td>{product.averageRating || "0"}</td>
+                            <td>{product.inventoryStatus}</td> */}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </section>
         </>
     );

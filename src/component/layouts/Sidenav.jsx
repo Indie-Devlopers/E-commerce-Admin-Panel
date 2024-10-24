@@ -54,10 +54,10 @@ const Sidenav = () => {
       </li>
      
       <li>
-        <a href="#">
+        <Link to='/prodictlist'>
           <i className="bx bx-pie-chart-alt-2" />
           <span className="links_name">Analytics</span>
-        </a>
+        </Link>
         <span className="tooltip">Analytics</span>
       </li>
      
