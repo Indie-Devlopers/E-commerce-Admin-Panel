@@ -46,10 +46,10 @@ const Sidenav = () => {
         <span className="tooltip">Add Category</span>
       </li>
       <li>
-        <a href="#">
+        <Link to='/varients'>
           <i className="bx bx-user" />
           <span className="links_name">User</span>
-        </a>
+          </Link>
         <span className="tooltip">User</span>
       </li>
      

@@ -3,8 +3,14 @@ import axios from 'axios';
 import { useForm, useFieldArray } from 'react-hook-form';
 import Swal from 'sweetalert2';
 import Sidenav from '../layouts/Sidenav';
+import VariantForm from './VariantForm';
+import { useDispatch } from 'react-redux';
+import { setProductId } from './slice/productSlice'
 
 const ProductForm = () => {
+    const dispatch = useDispatch();
+
+
     const { register, handleSubmit, control, reset } = useForm({
         defaultValues: {
             variants: [{ color: '', productImage: [] }]
@@ -19,6 +25,7 @@ const ProductForm = () => {
     const [categories, setCategories] = useState([]);
     const [subCategories, setSubCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [createdProductId, setCreatedProductId] = useState('');
 
     useEffect(() => {
         fetchCategories();
@@ -77,6 +84,13 @@ const ProductForm = () => {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             console.log(response);
+
+
+            const createdProductId = response.data.data._id;
+            console.log('Product id se Created',response.data.data._id)
+
+            dispatch(setProductId(response.data.data._id)); //Redux
+
             Swal.fire('Created!', 'Product created successfully.', 'success');
             reset();
         } catch (error) {
@@ -84,6 +98,14 @@ const ProductForm = () => {
             console.error('Error:', error);
         }
     };
+
+
+    // Handle Variants================================
+
+   
+
+
+
 
     return (
       <>
@@ -286,7 +308,7 @@ const ProductForm = () => {
                 </div>
 
                 {/* Variants */}
-                <div className="mb-4">
+                {/* <div className="mb-4">
                     <label className="block text-gray-700 text-xl font-bold">Variants</label>
                     {fields.map((item, index) => (
                         <div key={item.id} className="border p-4 mb-4 rounded-md">
@@ -315,13 +337,17 @@ const ProductForm = () => {
                     <button type="button" onClick={() => append({ color: '', productImage: [] })} className="bg-green-500 text-white p-2 rounded-md">
                         Add Variant
                     </button>
-                </div>
+                </div> */}
 
                 <button type="submit" className="bg-blue-500 text-white p-2 rounded-md w-full">
                     Create Product
                 </button>
             </form>
         </div>
+
+
+       {/* <VariantForm productID={createdProductId}/> */}
+        
         </section>
         </>
     );
