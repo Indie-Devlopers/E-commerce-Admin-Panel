@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import Sidenav from '../layouts/Sidenav';
 import { useSelector } from 'react-redux';
@@ -43,7 +43,7 @@ const VariantForm = () => {
           formData.append('productImage', image);
         });
 
-        const response = await axios.post('http://localhost:4000/products/image', formData, {
+        const response = await axios.post('http://localhost:4000/variant', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -134,6 +134,39 @@ const VariantForm = () => {
               {loading ? 'Submitting...' : 'Create Variants'}
             </button>
           </form>
+
+          {/* Table to display the variants */}
+          <h2 className="text-2xl font-bold mt-5">Current Variants</h2>
+          <table className="table table-bordered mt-3">
+            <thead>
+              <tr>
+                <th>Variant Color</th>
+                <th>Product Images</th>
+              </tr>
+            </thead>
+            <tbody>
+              {variants.map((variant, index) => (
+                <tr key={index}>
+                  <td>{variant.color}</td>
+                  <td>
+                    {variant.imagePreview.length > 0 ? (
+                      variant.imagePreview.map((img, imgIndex) => (
+                        <img
+                          key={imgIndex}
+                          src={img}
+                          alt="preview"
+                          className="img-thumbnail"
+                          style={{ width: '50px', height: '50px', marginRight: '5px' }}
+                        />
+                      ))
+                    ) : (
+                      'No images uploaded'
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
     </>
