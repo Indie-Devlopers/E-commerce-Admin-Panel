@@ -6,8 +6,8 @@ const Sidenav = () => {
     <>
     <div className="sidebar">
     <div className="logo-details">
-      <i className="bx bxl-c-plus-plus icon" />
-      <div className="logo_name">LOGO</div>
+      {/* <i className="bx bxl-c-plus-plus icon" /> */}
+      <div className="logo_name">Unicodes</div>
       <i className="bx bx-menu" id="btn" />
     </div>
     <ul className="nav-list">
@@ -18,12 +18,19 @@ const Sidenav = () => {
       </li>
       <li>
         <a href="#">
-        <Link to='/'>
+        <Link to='/dashboard'>
           <i className="bx bx-grid-alt" />
           <span className="links_name">Dashboard</span>
           </Link>
         </a>
         <span className="tooltip">Dashboard</span>
+      </li>
+      <li>
+        <Link to='/products'>
+          <i className="bx bx-user" />
+          <span className="links_name">View Products</span>
+          </Link>
+        <span className="tooltip">View Products</span>
       </li>
       <li>
         
@@ -45,13 +52,13 @@ const Sidenav = () => {
         </a>
         <span className="tooltip">Add Category</span>
       </li>
-      <li>
-        <Link to='/varients'>
+      {/* <li>
+        <Link to='/postdata/varients'>
           <i className="bx bx-user" />
-          <span className="links_name">User</span>
+          <span className="links_name">Varient</span>
           </Link>
-        <span className="tooltip">User</span>
-      </li>
+        <span className="tooltip">Varient</span>
+      </li> */}
      
       <li>
         <Link to='/prodictlist'>

@@ -37,13 +37,13 @@ const VariantForm = () => {
     try {
       for (let i = 0; i < variants.length; i++) {
         const formData = new FormData();
-        formData.append('productId', productID);
+        formData.append('productId', productID.data._id);
         formData.append('color', variants[i].color);
         variants[i].productImages.forEach((image) => {
           formData.append('productImage', image);
         });
 
-        const response = await axios.post('http://localhost:4000/variant', formData, {
+        const response = await axios.post('https://unicodes-uniform-e-com-site-backend.onrender.com/variant', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -53,6 +53,7 @@ const VariantForm = () => {
       }
 
       // Clear all variants after submission
+      alert('We still working this "To see products Please go to View Products page"')
       setVariants([{ color: '', productImages: [], imagePreview: [] }]);
     } catch (error) {
       console.error('Error creating variant:', error);
@@ -73,14 +74,15 @@ const VariantForm = () => {
         </div>
 
         <div className="container mx-auto p-4">
-          <h2 className="text-2xl font-bold mb-4">Add Variants</h2>
-
+          
+          <h2 className="text-2xl font-bold mt-5 pt-3 mb-4">Add Variants</h2>
+          <h2 className="text-xl font-bold mb-4">{productID.data.productName}</h2>
           <form onSubmit={handleVariantsSubmit}>
             {error && <div className="alert alert-danger">{error}</div>}
 
             {variants.map((variant, index) => (
               <div key={index} className="mb-5">
-                <h3>Variant {index + 1}</h3>
+                <h3 className='font-bold'>Variant {index + 1}</h3>
 
                 <div className="mb-3">
                   <label htmlFor={`color-${index}`} className="form-label">Color</label>
@@ -126,12 +128,12 @@ const VariantForm = () => {
               </div>
             ))}
 
-            <button type="button" className="btn btn-secondary mb-4" onClick={handleAddVariant}>
-              Add Variant
+            <button type="button" className="btn btn-secondary  mr-2" onClick={handleAddVariant}>
+              Add More Variant
             </button>
 
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'Submitting...' : 'Create Variants'}
+            <button type="submit" className="btn btn-primary font-bold" disabled={loading}>
+              {loading ? 'Saving...' : 'Save Variants'}
             </button>
           </form>
 

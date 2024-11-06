@@ -10,7 +10,7 @@ const Getdata = () => {
     // Define the async function to fetch data
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/products/get-products');
+        const response = await axios.get('https://unicodes-uniform-e-com-site-backend.onrender.com/products/get-products');
         setData(response.data);
         console.log(response.data);
       } catch (error) {

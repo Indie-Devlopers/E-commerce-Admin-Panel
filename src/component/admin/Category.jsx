@@ -16,7 +16,7 @@ const Category = () => {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get('http://localhost:4000/get-categories');
+            const response = await axios.get('https://unicodes-uniform-e-com-site-backend.onrender.com/get-categories');
             if (Array.isArray(response.data.data)) {
                 setCategories(response.data.data);
             } else {
@@ -39,14 +39,14 @@ const Category = () => {
 
         try {
             if (isEditing) {
-                await axios.patch(`http://localhost:4000/update-category/${editCategoryId}`, formData, {
+                await axios.patch(`https://unicodes-uniform-e-com-site-backend.onrender.com/update-category/${editCategoryId}`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
                 Swal.fire('Updated!', 'Category updated successfully.', 'success');
             } else {
-                await axios.post('http://localhost:4000/category', formData, {
+                await axios.post('https://unicodes-uniform-e-com-site-backend.onrender.com/category', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
@@ -84,7 +84,7 @@ const Category = () => {
 
         if (confirmed.isConfirmed) {
             try {
-                await axios.delete(`http://localhost:4000/delete-category/${id}`);
+                await axios.delete(`https://unicodes-uniform-e-com-site-backend.onrender.com/delete-category/${id}`);
                 Swal.fire('Deleted!', 'Category has been deleted.', 'success');
                 fetchCategories();
             } catch (error) {

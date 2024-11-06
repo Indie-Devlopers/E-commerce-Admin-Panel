@@ -7,6 +7,7 @@ import Sidenav from "../layouts/Sidenav";
 // import VariantForm from './VariantForm';
 import { useDispatch } from "react-redux";
 import { setProductId } from "./slice/productSlice";
+import { useNavigate } from "react-router-dom";
 
 const ProductForm = () => {
   const dispatch = useDispatch();
@@ -26,7 +27,7 @@ const ProductForm = () => {
   // const [createdProductId, setCreatedProductId] = useState('');
 
   const [selectedCategory, setSelectedCategory] = useState("");
-
+ const navigate = useNavigate()
   useEffect(() => {
     fetchCategories();
     fetchProducts();
@@ -35,7 +36,7 @@ const ProductForm = () => {
   // Fetch Categories from the API
   const fetchCategories = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/get-categories");
+      const response = await axios.get("https://unicodes-uniform-e-com-site-backend.onrender.com/get-categories");
       setCategories(response.data.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -46,7 +47,7 @@ const ProductForm = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:4000/products/get-products"
+        "https://unicodes-uniform-e-com-site-backend.onrender.com/products/get-products"
       );
       console.log(response.data.data);
       setProducts(response.data.data); // Assuming response.data.data contains the list of products
@@ -67,15 +68,33 @@ const ProductForm = () => {
   };
   const onSubmit = async (data) => {
     const formData = new FormData();
-
+  
+    // Basic product details
     formData.append("productName", data.productName);
     formData.append("categoryId", data.categoryId);
     formData.append("subCategory", data.subCategory);
     formData.append("productDescription", data.productDescription);
     formData.append("productPrice", data.productPrice);
     formData.append("productDiscountPrice", data.productDiscountPrice);
-    formData.append("productSizes[topSize]", data.topSize);
-    formData.append("productSizes[bottomSize]", data.bottomSize);
+  
+    // Product Type
+    formData.append("productType[isTop]", !!data['productType.isTop']);
+    formData.append("productType[isBottom]", !!data['productType.isBottom']);
+    formData.append("productType[isTopBottom]", !!data['productType.isTopBottom']);
+  
+    // Product Sizes
+    const topSizes = ['m', 's', 'l', 'xl', '2xl', '3xl'];
+    const bottomSizes = ['28', '30', '32', '34', '36', '38'];
+  
+    topSizes.forEach(size => {
+      formData.append(`productSizes[topSizes][${size}]`, !!data[`topSizes.${size}`]);
+    });
+  
+    bottomSizes.forEach(size => {
+      formData.append(`productSizes[bottomSizes][${size}]`, !!data[`bottomSizes.${size}`]);
+    });
+  
+    // Additional product details
     formData.append("productDetails[fabric]", data.fabric);
     formData.append("productDetails[countryOrigin]", data.countryOrigin);
     formData.append("additionalInfo[details]", data.details);
@@ -87,41 +106,40 @@ const ProductForm = () => {
     formData.append("tags", data.tags);
     formData.append("ratings", data.ratings);
     formData.append("reviews", data.reviews);
-
-    // Handle variants (color and images)
-    // data.variants.forEach((variant, index) => {
-    //     formData.append(`variants[${index}][color]`, variant.color);
-    //     for (let i = 0; i < variant.productImage.length; i++) {
-    //         formData.append(`variants[${index}][productImage]`, variant.productImage[i]);
-    //     }
-    // });
-
+  
+    // Convert FormData to an object for easier logging
+    const formObject = {};
+    formData.forEach((value, key) => {
+      formObject[key] = value;
+    });
+    
+    console.log("Submitting form data:", formObject); // Log the form data
+  
     try {
       const response = await axios.post(
-        "http://localhost:4000/products/product",
+        "https://unicodes-uniform-e-com-site-backend.onrender.com/products/product",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
+  
       console.log(response);
-
-      // const createdProductId = response.data.data._id;
-      console.log("Product id se Created", response.data.data._id);
-
-      dispatch(setProductId(response.data.data._id));
-
+      dispatch(setProductId(response.data));
       Swal.fire("Created!", "Product created successfully.", "success");
+      navigate("varients");
       reset();
     } catch (error) {
-      Swal.fire("Error!", "There was an error.", "error");
-      console.error("Error:", error);
+      Swal.fire("Error!", "There was an error: " + error.message, "error");
+      console.error("Error:", error.response ? error.response.data : error.message);
     }
   };
+  
+  
 
   const deleteProduct = async (productId) => {
     try {
-      const response = await axios.delete(`http://localhost:4000/products/delete-product/${productId}`);
+      const response = await axios.delete(`https://unicodes-uniform-e-com-site-backend.onrender.com/products/delete-product/${productId}`);
       console.log(response.data);
       Swal.fire("Deleted!", "Product deleted successfully.", "success");
       fetchProducts(); // Refresh the product list after deletion
@@ -188,238 +206,8 @@ const ProductForm = () => {
           </div>
         </div>
         <div className="header-space" />
+  . 
 
-        <div className="container mx-auto p-4">
-          <h2 className="text-2xl font-bold mb-4">Add Product</h2>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            {/* Category Dropdown */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Category</label>
-              <select
-                {...register("categoryId", { required: true })}
-                onChange={(e) => handleCategoryChange(e.target.value)}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              >
-                <option value="">Select Category</option>
-                {categories.map((category) => (
-                  <option key={category._id} value={category._id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* SubCategory Dropdown */}
-            {subCategories.length > 0 && (
-              <div className="mb-4">
-                <label className="block text-gray-700">Sub Category</label>
-                <select
-                  {...register("subCategory")}
-                  className="border border-gray-300 p-2 w-full rounded-md"
-                >
-                  <option value="">Select Sub Category</option>
-                  {subCategories.map((subCat, index) => (
-                    <option key={index} value={subCat}>
-                      {subCat}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Product Name</label>
-              <input
-                type="text"
-                {...register("productName", { required: true })}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Product Description</label>
-              <textarea
-                {...register("productDescription", { required: true })}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Product Price</label>
-              <input
-                type="number"
-                {...register("productPrice", { required: true })}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Discount Price</label>
-              <input
-                type="number"
-                {...register("productDiscountPrice")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            {/* Product Sizes */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Top Size</label>
-              <select
-                {...register("topSize")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              >
-                <option value="">Select Top Size</option>
-                <option value="s">S</option>
-                <option value="m">M</option>
-                <option value="l">L</option>
-                <option value="xl">XL</option>
-                <option value="2xl">2XL</option>
-                <option value="3xl">3XL</option>
-              </select>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Bottom Size</label>
-              <select
-                {...register("bottomSize")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              >
-                <option value="">Select Bottom Size</option>
-                <option value="28">28</option>
-                <option value="30">30</option>
-                <option value="32">32</option>
-                <option value="34">34</option>
-                <option value="36">36</option>
-                <option value="38">38</option>
-              </select>
-            </div>
-
-            {/* Product Details */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Fabric</label>
-              <input
-                type="text"
-                {...register("fabric")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Country of Origin</label>
-              <input
-                type="text"
-                {...register("countryOrigin")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            {/* Additional Info */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Additional Details</label>
-              <textarea
-                {...register("details")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Fabric and Care</label>
-              <textarea
-                {...register("fabricAndCare")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">
-                Return and Change Policy
-              </label>
-              <textarea
-                {...register("returnAndChange")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            {/* Gender */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Gender</label>
-              <select
-                {...register("gender")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
-            </div>
-
-            {/* Pockets */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Pockets</label>
-              <input
-                type="text"
-                {...register("pockets")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            {/* Inventory Status */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Inventory Status</label>
-              <select
-                {...register("inventoryStatus")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              >
-                <option value="">Select Status</option>
-                <option value="inStock">In Stock</option>
-                <option value="outOfStock">Out of Stock</option>
-                <option value="preOrder">Pre Order</option>
-              </select>
-            </div>
-
-            {/* Tags */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Tags</label>
-              <select
-                {...register("tags")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              >
-                <option value="">Select Tag</option>
-                <option value="trending">Trending</option>
-                <option value="new">New</option>
-              </select>
-            </div>
-
-            {/* Ratings */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Ratings</label>
-              <input
-                type="number"
-                min="1"
-                max="5"
-                {...register("ratings")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            {/* Reviews */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Reviews</label>
-              <textarea
-                {...register("reviews")}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="bg-blue-500 text-white p-2 rounded-md w-full"
-            >
-              Create Product
-            </button>
-          </form>
-        </div>
 
         {/* <VariantForm productID={createdProductId}/> */}
         {/* Product Table */}

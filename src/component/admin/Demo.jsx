@@ -10,7 +10,7 @@ const Demo = () => {
   // Define fetchCategories outside of useEffect
   const fetchCategories = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/get-categories");
+      const response = await axios.get("https://unicodes-uniform-e-com-site-backend.onrender.com/get-categories");
       console.log("Fetched categories:", response.data); // Log the fetched categories
       if (Array.isArray(response.data)) {
         setCategories(response.data);
@@ -35,7 +35,7 @@ const Demo = () => {
     formData.append("landingImage", landingImage);
 
     try {
-      const response = await axios.post("http://localhost:4000/category", formData, {
+      const response = await axios.post("https://unicodes-uniform-e-com-site-backend.onrender.com/category", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

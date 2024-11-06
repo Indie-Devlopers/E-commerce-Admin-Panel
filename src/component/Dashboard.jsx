@@ -12,7 +12,7 @@ const Dashboard = () => {
       <div className="header uboxed">
         <ul className="logo">
           <li>
-            <img src="https://byjaris.com/img/byjaris.svg" alt="Fimanbol" />
+            {/* <img src="https://byjaris.com/img/byjaris.svg" alt="Fimanbol" /> */}
           </li>
         </ul>
         <ul className="menu">
@@ -30,12 +30,12 @@ const Dashboard = () => {
           </li>
           <li>
             <div id="lang">
-              <div className="selected">
+              {/* <div className="selected">
                 <img
                   src="https://byjaris.com/code/icons/flag-en.svg"
                   alt="English"
                 />
-              </div>
+              </div> */}
               <div className="options">
                 <a href="#">
                   <img
