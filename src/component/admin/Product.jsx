@@ -85,6 +85,7 @@ const ProductForm = () => {
       pockets: '',
       inventoryStatus: '',
       tags: '',
+      averageRating: ''
     },
     onSubmit: async (values) => {
       try {
@@ -115,7 +116,7 @@ const ProductForm = () => {
           console.log(key, value);
         }
     
-        const response = await axios.post("http://localhost:4000/products/product", formData, {
+        const response = await axios.post("https://unicodes-uniform-e-com-site-backend.onrender.com/products/product", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
     
@@ -366,7 +367,17 @@ const ProductForm = () => {
                 <option value="new">New</option>
               </select>
             </div>
-
+            <div className="mb-4">
+              <label className="block text-gray-700">Rating</label>
+              <input
+              
+               max={5}
+                type="number"
+                name="averageRating"
+                onChange={formik.handleChange}
+                className="border border-gray-300 p-2 w-full rounded-md"
+              />
+            </div>
             <button
               type="submit"
               className="bg-blue-500 text-white p-2 rounded-md w-full"
