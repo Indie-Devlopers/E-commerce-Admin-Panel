@@ -76,27 +76,31 @@ const ProductForm = () => {
           "38": false,
         },
       },
-      fabric: '',
-      countryOrigin: '',
-      details: '',
-      fabricAndCare: '',
-      returnAndChange: '',
+      productDetails: {
+        fabric: '',
+        countryOrigin: '',
+      },
+      additionalInfo: {
+        details: '',
+        fabricAndCare: '',
+        returnAndChange: '',
+      },
       gender: '',
       pockets: '',
       inventoryStatus: '',
       tags: '',
-      averageRating: ''
     },
     onSubmit: async (values) => {
       try {
         const formData = new FormData();
     
-        // Log Formik values to check if they are populated
-        // console.log("Formik Values:", values);
-    
         // Append all fields from Formik values
         Object.entries(values).forEach(([key, value]) => {
-          if (typeof value === 'object' && value !== null) {
+          if (key === 'productDetails' || key === 'additionalInfo') {
+            Object.entries(value).forEach(([subKey, subValue]) => {
+              formData.append(`${key}[${subKey}]`, subValue);
+            });
+          } else if (typeof value === 'object' && value !== null) {
             Object.entries(value).forEach(([subKey, subValue]) => {
               if (typeof subValue === 'object' && subValue !== null) {
                 Object.entries(subValue).forEach(([sizeKey, sizeValue]) => {
@@ -107,16 +111,16 @@ const ProductForm = () => {
               }
             });
           } else {
-            formData.append(key, value);
+            formData.append(key, value );
           }
         });
-    
+
         // Log FormData entries
         for (let [key, value] of formData.entries()) {
           console.log(key, value);
         }
     
-        const response = await axios.post("https://unicodes-uniform-e-com-site-backend.onrender.com/products/product", formData, {
+        const response = await axios.post("http://localhost:4000/products/product", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
     
@@ -240,7 +244,7 @@ const ProductForm = () => {
                   <input
                     type="checkbox"
                     name={`productSizes.topSizes.${size}`}
-                    checked={formik.values.productSizes.topSizes[size]}
+                    checked={formik.values.productSizes.topSizes [size]}
                     onChange={formik.handleChange}
                   />
                   <label htmlFor={`productSizes.topSizes.${size}`}>
@@ -271,7 +275,8 @@ const ProductForm = () => {
               <label className="block text-gray-700">Fabric</label>
               <input
                 type="text"
-                name="fabric onChange={formik.handleChange}"
+                name="productDetails.fabric"
+                onChange={formik.handleChange}
                 className="border border-gray-300 p-2 w-full rounded-md"
               />
             </div>
@@ -280,7 +285,7 @@ const ProductForm = () => {
               <label className="block text-gray-700">Country of Origin</label>
               <input
                 type="text"
-                name="countryOrigin"
+                name="productDetails.countryOrigin"
                 onChange={formik.handleChange}
                 className="border border-gray-300 p-2 w-full rounded-md"
               />
@@ -290,7 +295,7 @@ const ProductForm = () => {
             <div className="mb-4">
               <label className="block text-gray-700">Additional Details</label>
               <textarea
-                name="details"
+                name="additionalInfo.details"
                 onChange={formik.handleChange}
                 className="border border-gray-300 p-2 w-full rounded-md"
               />
@@ -299,7 +304,7 @@ const ProductForm = () => {
             <div className="mb-4">
               <label className="block text-gray-700">Fabric and Care</label>
               <textarea
-                name="fabricAndCare"
+                name="additionalInfo.fabricAndCare"
                 onChange={formik.handleChange}
                 className="border border-gray-300 p-2 w-full rounded-md"
               />
@@ -308,7 +313,7 @@ const ProductForm = () => {
             <div className="mb-4">
               <label className="block text-gray-700">Return and Change Policy</label>
               <textarea
-                name="returnAndChange"
+                name="additionalInfo.returnAndChange"
                 onChange={formik.handleChange}
                 className="border border-gray-300 p-2 w-full rounded-md"
               />
@@ -367,17 +372,7 @@ const ProductForm = () => {
                 <option value="new">New</option>
               </select>
             </div>
-            <div className="mb-4">
-              <label className="block text-gray-700">Rating</label>
-              <input
-              
-               max={5}
-                type="number"
-                name="averageRating"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
+
             <button
               type="submit"
               className="bg-blue-500 text-white p-2 rounded-md w-full"
