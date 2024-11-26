@@ -56,8 +56,26 @@ const ProductForm = () => {
       subCategory: '',
       productDescription: '',
       productPrice: '',
-      productDiscountPrice: '',
-      productType: '', 
+      defaultProductPrice: '',
+      productDiscountPrice: {
+        topSizes: {
+          m: '',
+          s: '',
+          l: '',
+          xl: '',
+          "2xl": '',
+          "3xl": '',
+        },
+        bottomSizes: {
+          "28": '',
+          "30": '',
+          "32": '',
+          "34": '',
+          "36": '',
+          "38": '',
+        }
+      },
+      productType: '',
       productSizes: {
         topSizes: {
           m: false,
@@ -93,7 +111,7 @@ const ProductForm = () => {
     onSubmit: async (values) => {
       try {
         const formData = new FormData();
-    
+
         // Append all fields from Formik values
         Object.entries(values).forEach(([key, value]) => {
           if (key === 'productDetails' || key === 'additionalInfo') {
@@ -111,7 +129,7 @@ const ProductForm = () => {
               }
             });
           } else {
-            formData.append(key, value );
+            formData.append(key, value);
           }
         });
 
@@ -119,11 +137,11 @@ const ProductForm = () => {
         for (let [key, value] of formData.entries()) {
           console.log(key, value);
         }
-    
-        const response = await axios.post("http://localhost:4000/products/product", formData, {
+
+        const response = await axios.post("https://unicodes-uniform-e-com-site-backend.onrender.com/products/product", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-    
+
         dispatch(setProductId(response.data));
         Swal.fire("Created!", "Product created successfully.", "success");
         navigate("varients");
@@ -209,12 +227,11 @@ const ProductForm = () => {
                 className="border border-gray-300 p-2 w-full rounded-md"
               />
             </div>
-
             <div className="mb-4">
-              <label className="block text-gray-700">Discount Price</label>
+              <label className="block text-gray-700">Default Discount Price</label>
               <input
                 type="number"
-                name="productDiscountPrice"
+                name="defaultProductPrice"
                 onChange={formik.handleChange}
                 className="border border-gray-300 p-2 w-full rounded-md"
               />
@@ -237,38 +254,58 @@ const ProductForm = () => {
 
             {/* Product Sizes as Checkboxes */}
             {/* Top Sizes */}
-            <div className="mb-4">
-              <label>Top Sizes:</label>
-              {topSizes.map((size) => (
-                <div key={size} className="inline-flex items-center mr-4">
-                  <input
-                    type="checkbox"
-                    name={`productSizes.topSizes.${size}`}
-                    checked={formik.values.productSizes.topSizes [size]}
-                    onChange={formik.handleChange}
-                  />
-                  <label htmlFor={`productSizes.topSizes.${size}`}>
-                    {size.toUpperCase()}
-                  </label>
-                </div>
-              ))}
-            </div>
+            {(formik.values.productType === "top" || formik.values.productType === "topBottom") && (
+              <div className="mb-4">
+                <label>Top Sizes:</label>
+                {topSizes.map((size) => (
+                  <div key={size} className="inline-flex items-center mr-4">
+                    <input
+                      type="checkbox"
+                      name={`productSizes.topSizes.${size}`}
+                      checked={formik.values.productSizes.topSizes[size]}
+                      onChange={formik.handleChange}
+                    />
+                    <label htmlFor={`productSizes.topSizes.${size}`}>
+                      {size.toUpperCase()}
+                    </label>
+                    <input
+                      type=" number"
+                      name={`productDiscountPrice.topSizes.${size}`}
+                      value={formik.values.productDiscountPrice.topSizes[size]}
+                      onChange={formik.handleChange}
+                      placeholder="Discount Price"
+                      className="ml-2 border border-gray-300 p-2 rounded-md"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Bottom Sizes */}
-            <div className="mb-4">
-              <label>Bottom Sizes:</label>
-              {bottomSizes.map((size) => (
-                <div key={size} className="inline-flex items-center mr-4">
-                  <input
-                    type="checkbox"
-                    name={`productSizes.bottomSizes.${size}`}
-                    checked={formik.values.productSizes.bottomSizes[size]}
-                    onChange={formik.handleChange}
-                  />
-                  <label htmlFor={`productSizes.bottomSizes.${size}`}>{size}</label>
-                </div>
-              ))}
-            </div>
+            {(formik.values.productType === "bottom" || formik.values.productType === "topBottom") && (
+              <div className="mb-4">
+                <label>Bottom Sizes:</label>
+                {bottomSizes.map((size) => (
+                  <div key={size} className="inline-flex items-center mr-4">
+                    <input
+                      type="checkbox"
+                      name={`productSizes.bottomSizes.${size}`}
+                      checked={formik.values.productSizes.bottomSizes[size]}
+                      onChange={formik.handleChange}
+                    />
+                    <label htmlFor={`productSizes.bottomSizes.${size}`}>{size}</label>
+                    <input
+                      type="number"
+                      name={`productDiscountPrice.bottomSizes.${size}`}
+                      value={formik.values.productDiscountPrice.bottomSizes[size]}
+                      onChange={formik.handleChange}
+                      placeholder="Discount Price"
+                      className="ml-2 border border-gray-300 p-2 rounded-md"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Product Details */}
             <div className="mb-4">
@@ -362,8 +399,7 @@ const ProductForm = () => {
             {/* Tags */}
             <div className="mb-4">
               <label className="block text-gray-700">Tags</label>
-              <select
-                name="tags"
+              <select name="tags"
                 onChange={formik.handleChange}
                 className="border border-gray-300 p-2 w-full rounded-md"
               >
