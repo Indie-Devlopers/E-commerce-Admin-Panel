@@ -1,424 +1,539 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { useFormik } from "formik";
-import Swal from "sweetalert2";
 import Sidenav from "../layouts/Sidenav";
-import { useDispatch } from "react-redux";
-import { setProductId } from "./slice/productSlice";
-import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import { useParams } from "react-router-dom";
 
 const ProductForm = () => {
-  const dispatch = useDispatch();
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [products, setProducts] = useState();
-  const [topSizes] = useState(["m", "s", "l", "xl", "2xl", "3xl"]);
-  const [bottomSizes] = useState(["28", "30", "32", "34", "36", "38"]);
+  const [products, setProducts] = useState([]);
+  const { productId } = useParams();
+  const [productData, setProductData] = useState({
+    productName: "",
+    productDescription: "",
+    productDefaultPrice: "",
+    productActualPrice: "",
+    productDiscountPrice: {
+      "250g": null,
+      "500g": null,
+      "1kg": null,
+      "2kg": null,
+      "3kg": null,
+    },
+    productWeight: {
+      "250g": false,
+      "500g": false,
+      "1kg": false,
+      "2kg": false,
+      "3kg": false,
+    },
+    productQuantity: 1,
+    productImage: [],
+    AdditionalInformation: {
+      returnPolicy: "",
+      shipping: "",
+    },
+    productStatus: "inStock",
+    averageRating: 4,
+    totalRatings: 0,
+    totalReviews: 0,
+  });
 
-  const navigate = useNavigate();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProductData({
+      ...productData,
+      [name]: value,
+    });
+  };
+
+  const handleWeightChange = (e) => {
+    const { name, checked } = e.target;
+    setProductData((prevData) => ({
+      ...prevData,
+      productWeight: {
+        ...prevData.productWeight,
+        [name]: checked,
+      },
+      productDiscountPrice: {
+        ...prevData.productDiscountPrice,
+        [name]: checked ? prevData.productDiscountPrice[name] : null, // Reset price if unchecked
+      },
+    }));
+  };
+
+  const handleWeightPriceChange = (e, weight) => {
+    const { value } = e.target;
+    setProductData((prevData) => ({
+      ...prevData,
+      productDiscountPrice: {
+        ...prevData.productDiscountPrice,
+        [weight]: value,
+      },
+    }));
+  };
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setProductData({
+      ...productData,
+      productImage: files,
+    });
+  };
+
+  // get the Product
 
   useEffect(() => {
-    fetchCategories();
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/products/get-product"
+        );
+        // Ensure the response data is an array
+        if (Array.isArray(response.data.data)) {
+          setProducts(response.data.data);
+        } else {
+          console.error("Expected an array but got:", response.data);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
     fetchProducts();
   }, []);
 
-  // Fetch Categories from the API
-  const fetchCategories = async () => {
-    try {
-      const response = await axios.get("https://unicodes-uniform-e-com-site-backend.onrender.com/get-categories");
-      setCategories(response.data.data);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  };
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   const formData = new FormData();
 
-  // Fetch Products from the API
-  const fetchProducts = async () => {
-    try {
-      const response = await axios.get("https://unicodes-uniform-e-com-site-backend.onrender.com/products/get-products");
-      setProducts(response.data.data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  };
+    
+  //   for (const key in productData) {
+  //     if (key === "productImage") {
+  //       productData.productImage.forEach((file) => {
+  //         formData.append("productImage", file);
+  //       });
+  //     } else if (key === "productWeight") {
+  //       for (const weight in productData.productWeight) {
+  //         if (productData.productWeight[weight]) {
+  //           formData.append(
+  //             `productDiscountPrice[${weight}]`,
+  //             productData.productDiscountPrice[weight]
+  //           );
+  //         }
+  //       }
+  //     } else {
+  //       formData.append(key, productData[key]);
+  //     }
+  //   }
 
-  const handleCategoryChange = (categoryId) => {
-    setSelectedCategory(categoryId);
-    const selectedCategoryData = categories.find((cat) => cat._id === categoryId);
-    setSubCategories(selectedCategoryData ? selectedCategoryData.subCategory : []);
-  };
+  //   console.log("Product Weight:", productData.productWeight);
 
-  const formik = useFormik({
-    initialValues: {
-      productName: '',
-      categoryId: '',
-      subCategory: '',
-      productDescription: '',
-      productPrice: '',
-      defaultProductPrice: '',
-      productDiscountPrice: {
-        topSizes: {
-          m: '',
-          s: '',
-          l: '',
-          xl: '',
-          "2xl": '',
-          "3xl": '',
-        },
-        bottomSizes: {
-          "28": '',
-          "30": '',
-          "32": '',
-          "34": '',
-          "36": '',
-          "38": '',
-        }
-      },
-      productType: '',
-      productSizes: {
-        topSizes: {
-          m: false,
-          s: false,
-          l: false,
-          xl: false,
-          "2xl": false,
-          "3xl": false,
-        },
-        bottomSizes: {
-          "28": false,
-          "30": false,
-          "32": false,
-          "34": false,
-          "36": false,
-          "38": false,
-        },
-      },
-      productDetails: {
-        fabric: '',
-        countryOrigin: '',
-      },
-      additionalInfo: {
-        details: '',
-        fabricAndCare: '',
-        returnAndChange: '',
-      },
-      gender: '',
-      pockets: '',
-      inventoryStatus: '',
-      tags: '',
-    },
-    onSubmit: async (values) => {
-      try {
-        const formData = new FormData();
+  //   try {
+  //     const response = await axios.post(
+  //       "http://localhost:3000/products/product",
+  //       formData,
+  //       {
+  //         headers: {
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       }
+  //     );
+  //     console.log("Product created:", response.data);
+  //     Swal.fire("Product!", "Product created successfully.", "success");
+  //   } catch (error) {
+  //     Swal.fire("Error!", "There was an error.", "error");
+  //     console.error("Error creating product:", error);
+  //   }
+  // };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
 
-        // Append all fields from Formik values
-        Object.entries(values).forEach(([key, value]) => {
-          if (key === 'productDetails' || key === 'additionalInfo') {
-            Object.entries(value).forEach(([subKey, subValue]) => {
-              formData.append(`${key}[${subKey}]`, subValue);
-            });
-          } else if (typeof value === 'object' && value !== null) {
-            Object.entries(value).forEach(([subKey, subValue]) => {
-              if (typeof subValue === 'object' && subValue !== null) {
-                Object.entries(subValue).forEach(([sizeKey, sizeValue]) => {
-                  formData.append(`${key}[${subKey}][${sizeKey}]`, sizeValue);
-                });
-              } else {
-                formData.append(`${key}[${subKey}]`, subValue);
-              }
-            });
-          } else {
-            formData.append(key, value);
+    // Append the product data to FormData
+    for (const key in productData) {
+      if (key === "productImage") {
+        productData.productImage.forEach((file) => {
+          formData.append("productImage", file);
+        });
+      } else if (key === "productWeight") {
+        for (const weight in productData.productWeight) {
+          if (productData.productWeight[weight]) {
+            formData.append(
+              `productDiscountPrice[${weight}]`,
+              productData.productDiscountPrice[weight]
+            );
           }
-        });
-
-        // Log FormData entries
-        for (let [key, value] of formData.entries()) {
-          console.log(key, value);
         }
-
-        const response = await axios.post("https://unicodes-uniform-e-com-site-backend.onrender.com/products/product", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-
-        dispatch(setProductId(response.data));
-        Swal.fire("Created!", "Product created successfully.", "success");
-        navigate("varients");
-        formik.resetForm();
-      } catch (error) {
-        Swal.fire("Error!", "There was an error: " + error.message, "error");
-        console.error("Error:", error.response ? error.response.data : error.message);
+      } else {
+        formData.append(key, productData[key]);
       }
-    },
-  });
+    }
+
+    try {
+      const response = productId
+        ? await axios.put(
+            `http://localhost:3000/products/update-product/${productId}`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          )
+        : await axios.post(
+            "http://localhost:3000/products/product",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+          console.log("Update Data",response.data)
+      Swal.fire("Product!", "Product updated successfully.", "success");
+    } catch (error) {
+      Swal.fire("Error!", "There was an error.", "error");
+      console.error("Error updating product:", error);
+    }
+  };
+
+
+  // Delete Product
+
+  const handleDelete = async (id) => {
+    const confirmDelete = await Swal.fire({
+      title: "Are you sure?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "No, cancel!",
+    });
+
+    if (confirmDelete.isConfirmed) {
+      try {
+        const response = await axios.delete(`http://localhost:3000/products/delete-product/${id}`);
+        Swal.fire("Deleted!", response.data.message, "success");
+        setProducts(products.filter((product) => product._id !== id)); // Update the product list
+      } catch (error) {
+        console.error("Error deleting product:", error);
+        Swal.fire("Error", "There was an error deleting the product", "error");
+      }
+    }
+  };
 
   return (
     <>
       <Sidenav />
       <section className="home-section">
-        <div className="container mx-auto p-4">
-          <h2 className="text-2xl font-bold mb-4">Add Product </h2>
-          <form onSubmit={formik.handleSubmit}>
-            {/* Category Dropdown */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Category</label>
-              <select
-                name="categoryId"
-                onChange={(e) => {
-                  formik.handleChange(e);
-                  handleCategoryChange(e.target.value);
-                }}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              >
-                <option value="">Select Category</option>
-                {categories.map((category) => (
-                  <option key={category._id} value={category._id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* SubCategory Dropdown */}
-            {subCategories.length > 0 && (
-              <div className="mb-4">
-                <label className="block text-gray-700">Sub Category</label>
-                <select
-                  name="subCategory"
-                  onChange={formik.handleChange}
-                  className="border border-gray-300 p-2 w-full rounded-md"
-                >
-                  <option value="">Select Sub Category</option>
-                  {subCategories.map((subCat, index) => (
-                    <option key={index} value={subCat}>
-                      {subCat}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Product Name</label>
+        <div id="header">
+          <div className="header uboxed">
+            <ul className="logo">
+              <li></li>
+            </ul>
+            <ul className="menu">
+              <li>
+                <img
+                  src="https://byjaris.com/code/icons/home-alt.svg"
+                  alt="Fimanbol"
+                />
+              </li>
+              <li>
+                <img
+                  src="https://byjaris.com/code/icons/menu-alt.svg"
+                  alt="Fimanbol"
+                />
+              </li>
+              <li>
+                <div id="lang">
+                  <div className="selected">
+                    <img
+                      src="https://byjaris.com/code/icons/flag-en.svg"
+                      alt="English"
+                    />
+                  </div>
+                  <div className="options">
+                    <a href="#">
+                      <img
+                        src="https://byjaris.com/code/icons/flag-en.svg"
+                        alt="English"
+                      />
+                    </a>
+                    <a href="#">
+                      <img
+                        src="https://byjaris.com/code/icons/flag-pt.svg"
+                        alt="Português"
+                      />
+                    </a>
+                    <a href="#">
+                      <img
+                        src="https://byjaris.com/code/icons/flag-es.svg"
+                        alt="Español"
+                      />
+                    </a>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="header-space" />
+        <div className="text">Add Category</div>
+        <div className="container mt-5">
+          <h2>Create Product</h2>
+          <form onSubmit={handleSubmit} className="needs-validation" noValidate>
+            <div className="form-group">
+              <label htmlFor="productName">Product Name</label>
               <input
                 type="text"
+                className="form-control"
+                id="productName"
                 name="productName"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
+                placeholder="Product Name"
+                value={productData.productName}
+                onChange={handleChange}
+                required
               />
             </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Product Description</label>
+            <div className="form-group">
+              <label htmlFor="productDescription">Product Description</label>
               <textarea
+                className="form-control"
+                id="productDescription"
                 name="productDescription"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
+                placeholder="Product Description"
+                value={productData.productDescription}
+                onChange={handleChange}
+                required
               />
             </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Product Price</label>
+            <div className="form-group">
+              <label htmlFor="productDefaultPrice">Default Price</label>
               <input
                 type="number"
-                name="productPrice"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
+                className="form-control"
+                id="productDefaultPrice"
+                name="productDefaultPrice"
+                placeholder="Default Price"
+                value={productData.productDefaultPrice}
+                onChange={handleChange}
+                required
               />
             </div>
-            <div className="mb-4">
-              <label className="block text-gray-700">Default Discount Price</label>
+
+            <div className="form-group">
+              <label htmlFor="productActualPrice">Actual Price</label>
               <input
                 type="number"
-                name="defaultProductPrice"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
+                className="form-control"
+                id="productActualPrice"
+                name="productActualPrice"
+                placeholder="Actual Price"
+                value={productData.productActualPrice}
+                onChange={handleChange}
+                required
               />
             </div>
 
-            {/* Product Type Dropdown */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Product Type</label>
-              <select
-                name="productType"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              >
-                <option value="">Select Product Type</option>
-                <option value="top">Top</option>
-                <option value="bottom">Bottom</option>
-                <option value="topBottom">Top-Bottom</option>
-              </select>
-            </div>
-
-            {/* Product Sizes as Checkboxes */}
-            {/* Top Sizes */}
-            {(formik.values.productType === "top" || formik.values.productType === "topBottom") && (
-              <div className="mb-4">
-                <label>Top Sizes:</label>
-                {topSizes.map((size) => (
-                  <div key={size} className="inline-flex items-center mr-4">
-                    <input
-                      type="checkbox"
-                      name={`productSizes.topSizes.${size}`}
-                      checked={formik.values.productSizes.topSizes[size]}
-                      onChange={formik.handleChange}
-                    />
-                    <label htmlFor={`productSizes.topSizes.${size}`}>
-                      {size.toUpperCase()}
-                    </label>
-                    <input
-                      type=" number"
-                      name={`productDiscountPrice.topSizes.${size}`}
-                      value={formik.values.productDiscountPrice.topSizes[size]}
-                      onChange={formik.handleChange}
-                      placeholder="Discount Price"
-                      className="ml-2 border border-gray-300 p-2 rounded-md"
-                    />
-                  </div>
-                ))}
+            <h4>Select Product Weight:</h4>
+            {Object.keys(productData.productWeight).map((weight) => (
+              <div className="form-check" key={weight}>
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id={weight}
+                  name={weight}
+                  checked={productData.productWeight[weight]}
+                  onChange={handleWeightChange}
+                  required
+                />
+                <label className="form-check-label" htmlFor={weight}>
+                  {weight}
+                </label>
+                {productData.productWeight[weight] && (
+                  <input
+                    type="number"
+                    className="form-control mt-2"
+                    placeholder={`Price for ${weight}`}
+                    value={productData.productDiscountPrice[weight] || ""}
+                    onChange={(e) => handleWeightPriceChange(e, weight)}
+                    required
+                  />
+                )}
               </div>
-            )}
+            ))}
 
-            {/* Bottom Sizes */}
-            {(formik.values.productType === "bottom" || formik.values.productType === "topBottom") && (
-              <div className="mb-4">
-                <label>Bottom Sizes:</label>
-                {bottomSizes.map((size) => (
-                  <div key={size} className="inline-flex items-center mr-4">
-                    <input
-                      type="checkbox"
-                      name={`productSizes.bottomSizes.${size}`}
-                      checked={formik.values.productSizes.bottomSizes[size]}
-                      onChange={formik.handleChange}
-                    />
-                    <label htmlFor={`productSizes.bottomSizes.${size}`}>{size}</label>
-                    <input
-                      type="number"
-                      name={`productDiscountPrice.bottomSizes.${size}`}
-                      value={formik.values.productDiscountPrice.bottomSizes[size]}
-                      onChange={formik.handleChange}
-                      placeholder="Discount Price"
-                      className="ml-2 border border-gray-300 p-2 rounded-md"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="form-group">
+              <label htmlFor="productQuantity">Quantity</label>
+              <input
+                type="number"
+                className="form-control"
+                id="productQuantity"
+                name="productQuantity"
+                placeholder="Quantity"
+                value={productData.productQuantity}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-            {/* Product Details */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Fabric</label>
+            <div className="form-group">
+              <label htmlFor="productImage">Product Image</label>
+              <input
+                type="file"
+                className="form-control"
+                id="productImage"
+                name="productImage"
+                multiple
+                onChange={handleImageChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="returnPolicy">Return Policy</label>
               <input
                 type="text"
-                name="productDetails.fabric"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
+                className="form-control"
+                id="returnPolicy"
+                name="returnPolicy"
+                placeholder="Return Policy"
+                value={productData.AdditionalInformation.returnPolicy}
+                onChange={(e) =>
+                  setProductData({
+                    ...productData,
+                    AdditionalInformation: {
+                      ...productData.AdditionalInformation,
+                      returnPolicy: e.target.value,
+                    },
+                  })
+                }
               />
             </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Country of Origin</label>
+            <div className="form-group">
+              <label htmlFor="shipping">Shipping Info</label>
               <input
                 type="text"
-                name="productDetails.countryOrigin"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
+                className="form-control"
+                id="shipping"
+                name="shipping"
+                placeholder="Shipping Info"
+                value={productData.AdditionalInformation.shipping}
+                onChange={(e) =>
+                  setProductData({
+                    ...productData,
+                    AdditionalInformation: {
+                      ...productData.AdditionalInformation,
+                      shipping: e.target.value,
+                    },
+                  })
+                }
               />
             </div>
-
-            {/* Additional Info */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Additional Details</label>
-              <textarea
-                name="additionalInfo.details"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Fabric and Care</label>
-              <textarea
-                name="additionalInfo.fabricAndCare"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-gray-700">Return and Change Policy</label>
-              <textarea
-                name="additionalInfo.returnAndChange"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            {/* Gender */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Gender</label>
+            <div className="form-group">
+              <label htmlFor="productStatus">Product Status</label>
               <select
-                name="gender"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
+                className="form-control"
+                id="productStatus"
+                name="productStatus"
+                value={productData.productStatus}
+                onChange={handleChange}
+                required
               >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
-            </div>
-
-            {/* Pockets */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Pockets</label>
-              <input
-                type="text"
-                name="pockets"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              />
-            </div>
-
-            {/* Inventory Status */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Inventory Status</label>
-              <select
-                name="inventoryStatus"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              >
-                <option value="">Select Status</option>
                 <option value="inStock">In Stock</option>
                 <option value="outOfStock">Out of Stock</option>
-                <option value="preOrder">Pre Order</option>
               </select>
             </div>
-
-            {/* Tags */}
-            <div className="mb-4">
-              <label className="block text-gray-700">Tags</label>
-              <select name="tags"
-                onChange={formik.handleChange}
-                className="border border-gray-300 p-2 w-full rounded-md"
-              >
-                <option value="">Select Tag</option>
-                <option value="trending">Trending</option>
-                <option value="new">New</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="bg-blue-500 text-white p-2 rounded-md w-full"
-            >
+            <button type="submit" className="btn btn-primary">
               Create Product
             </button>
+          <button type="submit" className="btn btn-primary">
+            {productId ? "Update Product" : " Create Product"}
+          </button>
           </form>
         </div>
 
-        {/* Product Table */}
+        <div>
+                
+
+          <table className="table table-striped table-bordered">
+            <thead>
+              <tr>
+                <th>Product Name</th>
+                <th>Product Description</th>
+                <th>Default Price</th>
+                <th>Actual Price</th>
+                <th>Discount Price</th>
+                <th>Weight</th>
+                <th>Quantity</th>
+                <th>Image</th>
+                <th>Return Policy</th>
+                <th>Shipping</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.isArray(products) && products.length > 0 ? (
+                products.map((product, index) => (
+                  <tr key={index}>
+                    <td>{product.productName}</td>
+                    <td>{product.productDescription}</td>
+                    <td>{product.productDefaultPrice}</td>
+                    <td>{product.productActualPrice}</td>
+                   <td>
+                      {Object.keys(product.productDiscountPrice).map(
+                        (weight, index) => (
+                          <p key={index}>
+                            {weight}: {product.productDiscountPrice[weight]}
+                          </p>
+                        )
+                      )}
+                    </td>
+                    <td>
+                      {Object.keys(product.productWeight).map(
+                        (weight, index) => (
+                          <p key={index}>
+                            {weight}:{" "}
+                            {product.productWeight[weight] ? "Yes" : "No"}
+                          </p>
+                        )
+                      )}
+                    </td>
+                     <td>{product.productQuantity}</td>
+                   <td>
+                      {product.productImage.map((image, index) => (
+                        <img
+                          key={index}
+                          src={image}
+                          alt={product.productName}
+                          style={{ width: "50px", height: "50px" }}
+                        />
+                      ))}
+                    </td>
+                      <td>{product.returnPolicy}</td>
+                    <td>{product.shipping}</td>
+                    <td>{product.productStatus}</td> 
+                    <td>
+            <button
+              className="btn btn-danger"
+              onClick={() => handleDelete(product._id)} // Call the delete function
+            >
+              Delete
+            </button>
+          </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="11" className="text-center">
+                    No products available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </section>
     </>
   );

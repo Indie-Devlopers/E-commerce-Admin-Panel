@@ -7,7 +7,7 @@ const Sidenav = () => {
     <div className="sidebar">
     <div className="logo-details">
       {/* <i className="bx bxl-c-plus-plus icon" /> */}
-      <div className="logo_name">Unicodes</div>
+      <div className="logo_name">Maharaja33</div>
       <i className="bx bx-menu" id="btn" />
     </div>
     <ul className="nav-list">

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useForm } from 'react-hook-form'; // Importing useForm
-import Swal from 'sweetalert2'; // For SweetAlert
+import Swal from 'sweetalert2'; 
 import Sidenav from '../layouts/Sidenav';
 
 const Category = () => {

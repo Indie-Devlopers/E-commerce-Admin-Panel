@@ -8,6 +8,10 @@ import { setProductId } from "./slice/productSlice";
 import { useNavigate } from "react-router-dom";
 
 const ProductForm = () => {
+
+
+
+
   const dispatch = useDispatch();
   const { register, handleSubmit, reset } = useForm();
   const [categories, setCategories] = useState([]);
