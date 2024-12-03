@@ -1,0 +1,28 @@
+.loaderStyle {
+    width: 40px;
+    aspect-ratio: 1.154;
+    --_g: no-repeat radial-gradient(farthest-side, #6cb7e6a2 90%, #6cb7e600);
+    background:
+        var(--_g) 50% 0,
+        var(--_g) 0 100%,
+        var(--_g) 100% 100%,
+        var(--_g) 50% 100%;
+    background-size: 35% calc(35%*1.154);
+    animation: l16 1s infinite;
+}
+
+@keyframes l16 {
+
+    50%,
+    100% {
+        background-position: 100% 100%, 50% 0, 0 100%
+    }
+}
+
+.main {
+
+    height: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

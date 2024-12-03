@@ -8,6 +8,7 @@ import Product from './component/admin/Product';
 import VariantForm from './component/admin/VariantForm';
 import ProductAccordion from './component/admin/viewProducts';
 import AdminLogin from './component/admin/Login';
+import Loader from './component/Loader';
 // import ProductsList from './component/admin/ProductsList';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/getdata" element={<Getdata />} />
         <Route path="/postdata" element={<Product/>} />
         <Route path="/category" element={<Category/>} />
+        <Route path="/loader" element={<Loader/>} />
         <Route path="/postdata/varients" element={<VariantForm/>} />
         {/* <Route path="/prodictlist" element={<ProductsList/>} /> */}
         <Route path="/demo" element={<Demo/>} />

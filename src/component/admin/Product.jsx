@@ -47,18 +47,23 @@ const ProductForm = () => {
   };
 
   const handleWeightChange = (e) => {
-    const { name, checked } = e.target;
-    setProductData((prevData) => ({
-      ...prevData,
-      productWeight: {
+    const { name, checked } = e.target; // Get the name (weight) and checked status
+    console.log(`Checkbox for ${name} is now ${checked}`); // Log the checkbox change
+    setProductData((prevData) => {
+      const updatedWeight = {
         ...prevData.productWeight,
-        [name]: checked,
-      },
-      productDiscountPrice: {
-        ...prevData.productDiscountPrice,
-        [name]: checked ? prevData.productDiscountPrice[name] : null, // Reset price if unchecked
-      },
-    }));
+        [name]: checked, // Update the weight to true or false
+      };
+      console.log("Updated productWeight:", updatedWeight); // Log the updated weight object
+      return {
+        ...prevData,
+        productWeight: updatedWeight,
+        productDiscountPrice: {
+          ...prevData.productDiscountPrice,
+          [name]: checked ? prevData.productDiscountPrice[name] : null, // Reset price if unchecked
+        },
+      };
+    });
   };
 
   const handleWeightPriceChange = (e, weight) => {
@@ -68,6 +73,10 @@ const ProductForm = () => {
       productDiscountPrice: {
         ...prevData.productDiscountPrice,
         [weight]: value,
+      },
+      productWeight: {
+        ...prevData.productWeight,
+        [weight]: value !== "" && value !== null,
       },
     }));
   };
@@ -86,15 +95,16 @@ const ProductForm = () => {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/products/get-product"
+          "https://spices-e-com-site-backend-2.onrender.com/products/get-product"
         );
-        // Ensure the response data is an array
+
         if (Array.isArray(response.data.data)) {
           setProducts(response.data.data);
         } else {
           console.error("Expected an array but got:", response.data);
         }
       } catch (error) {
+        console.error("Error fetching products:", error);
         console.error(error);
       }
     };
@@ -106,7 +116,6 @@ const ProductForm = () => {
   //   e.preventDefault();
   //   const formData = new FormData();
 
-    
   //   for (const key in productData) {
   //     if (key === "productImage") {
   //       productData.productImage.forEach((file) => {
@@ -126,25 +135,8 @@ const ProductForm = () => {
   //     }
   //   }
 
-  //   console.log("Product Weight:", productData.productWeight);
+  console.log("Product Weight:", productData.productWeight);
 
-  //   try {
-  //     const response = await axios.post(
-  //       "http://localhost:3000/products/product",
-  //       formData,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data",
-  //         },
-  //       }
-  //     );
-  //     console.log("Product created:", response.data);
-  //     Swal.fire("Product!", "Product created successfully.", "success");
-  //   } catch (error) {
-  //     Swal.fire("Error!", "There was an error.", "error");
-  //     console.error("Error creating product:", error);
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -172,7 +164,7 @@ const ProductForm = () => {
     try {
       const response = productId
         ? await axios.put(
-            `http://localhost:3000/products/update-product/${productId}`,
+            `https://spices-e-com-site-backend-2.onrender.com/products/update-product/${productId}`,
             formData,
             {
               headers: {
@@ -180,23 +172,18 @@ const ProductForm = () => {
               },
             }
           )
-        : await axios.post(
-            "http://localhost:3000/products/product",
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
-          console.log("Update Data",response.data)
+        : await axios.post("https://spices-e-com-site-backend-2.onrender.com/products/product", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+      console.log("Update Data", response.data);
       Swal.fire("Product!", "Product updated successfully.", "success");
     } catch (error) {
       Swal.fire("Error!", "There was an error.", "error");
       console.error("Error updating product:", error);
     }
   };
-
 
   // Delete Product
 
@@ -212,9 +199,11 @@ const ProductForm = () => {
 
     if (confirmDelete.isConfirmed) {
       try {
-        const response = await axios.delete(`http://localhost:3000/products/delete-product/${id}`);
+        const response = await axios.delete(
+          `https://spices-e-com-site-backend-2.onrender.com/products/delete-product/${id}`
+        );
         Swal.fire("Deleted!", response.data.message, "success");
-        setProducts(products.filter((product) => product._id !== id)); // Update the product list
+        setProducts(products.filter((product) => product._id !== id));
       } catch (error) {
         console.error("Error deleting product:", error);
         Swal.fire("Error", "There was an error deleting the product", "error");
@@ -334,8 +323,21 @@ const ProductForm = () => {
                 required
               />
             </div>
-
             <h4>Select Product Weight:</h4>
+            <div className="form-check" >
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="productWeight"
+                  name="productWeight"
+                  checked={productData.productWeight}
+                  onChange={handleWeightChange}
+                />
+                <label className="form-check-label" >
+                  250
+                </label>
+                </div>
+            <h4>Select Product Weight & price:</h4>
             {Object.keys(productData.productWeight).map((weight) => (
               <div className="form-check" key={weight}>
                 <input
@@ -345,7 +347,6 @@ const ProductForm = () => {
                   name={weight}
                   checked={productData.productWeight[weight]}
                   onChange={handleWeightChange}
-                  required
                 />
                 <label className="form-check-label" htmlFor={weight}>
                   {weight}
@@ -357,12 +358,10 @@ const ProductForm = () => {
                     placeholder={`Price for ${weight}`}
                     value={productData.productDiscountPrice[weight] || ""}
                     onChange={(e) => handleWeightPriceChange(e, weight)}
-                    required
                   />
                 )}
               </div>
             ))}
-
             <div className="form-group">
               <label htmlFor="productQuantity">Quantity</label>
               <input
@@ -389,7 +388,6 @@ const ProductForm = () => {
                 required
               />
             </div>
-
             <div className="form-group">
               <label htmlFor="returnPolicy">Return Policy</label>
               <input
@@ -398,15 +396,15 @@ const ProductForm = () => {
                 id="returnPolicy"
                 name="returnPolicy"
                 placeholder="Return Policy"
-                value={productData.AdditionalInformation.returnPolicy}
+                value={productData.AdditionalInformation.returnPolicy || ""}
                 onChange={(e) =>
-                  setProductData({
-                    ...productData,
+                  setProductData((prevData) => ({
+                    ...prevData,
                     AdditionalInformation: {
-                      ...productData.AdditionalInformation,
+                      ...prevData.AdditionalInformation,
                       returnPolicy: e.target.value,
                     },
-                  })
+                  }))
                 }
               />
             </div>
@@ -444,18 +442,16 @@ const ProductForm = () => {
                 <option value="outOfStock">Out of Stock</option>
               </select>
             </div>
-            <button type="submit" className="btn btn-primary">
+            {/* <button type="submit" className="btn btn-primary">
               Create Product
+            </button> */}
+            <button type="submit" className="btn btn-primary">
+              {productId ? "Update Product" : " Create Product"}
             </button>
-          <button type="submit" className="btn btn-primary">
-            {productId ? "Update Product" : " Create Product"}
-          </button>
           </form>
         </div>
 
         <div>
-                
-
           <table className="table table-striped table-bordered">
             <thead>
               <tr>
@@ -481,7 +477,7 @@ const ProductForm = () => {
                     <td>{product.productDescription}</td>
                     <td>{product.productDefaultPrice}</td>
                     <td>{product.productActualPrice}</td>
-                   <td>
+                    <td>
                       {Object.keys(product.productDiscountPrice).map(
                         (weight, index) => (
                           <p key={index}>
@@ -491,17 +487,19 @@ const ProductForm = () => {
                       )}
                     </td>
                     <td>
-                      {Object.keys(product.productWeight).map(
-                        (weight, index) => (
-                          <p key={index}>
-                            {weight}:{" "}
-                            {product.productWeight[weight] ? "Yes" : "No"}
-                          </p>
-                        )
-                      )}
+                      <td>
+                        {Object.keys(product.productWeight).map(
+                          (weight, index) => (
+                            <p key={index}>
+                              {weight}:{" "}
+                              {product.productWeight[weight] ? "Yes" : "No"}
+                            </p>
+                          )
+                        )}
+                      </td>
                     </td>
-                     <td>{product.productQuantity}</td>
-                   <td>
+                    <td>{product.productQuantity}</td>
+                    <td>
                       {product.productImage.map((image, index) => (
                         <img
                           key={index}
@@ -511,17 +509,19 @@ const ProductForm = () => {
                         />
                       ))}
                     </td>
-                      <td>{product.returnPolicy}</td>
-                    <td>{product.shipping}</td>
-                    <td>{product.productStatus}</td> 
                     <td>
-            <button
-              className="btn btn-danger"
-              onClick={() => handleDelete(product._id)} // Call the delete function
-            >
-              Delete
-            </button>
-          </td>
+                      {product?.returnPolicy || "No return policy provided"}
+                    </td>
+                    <td>{product.shipping}</td>
+                    <td>{product.productStatus}</td>
+                    <td>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleDelete(product._id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 ))
               ) : (
